@@ -1,5 +1,5 @@
 /**
- * تطبيق بوابة جلب العالمية v2.0 - كود متكامل وخالٍ من الأخطاء
+ * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي
  */
 const { useState, useEffect, useMemo } = React;
 
@@ -147,7 +147,13 @@ function App() {
   }, [processedReps]);
 
   const visibleReps = useMemo(() => {
-    let list = processedReps;
+    let list = processedReps.filter(r => {
+      const role = String(r.role || '').toLowerCase();
+      const name = String(r.name || '');
+      const isManagement = r.id === 2 || r.id === 2011 || role === 'admin' || role === 'manager' || role === 'supervisor' || role === 'branch_supervisor' || name.includes('المدير العام') || name.includes('Saeed');
+      return !isManagement;
+    });
+
     if (selectedDepartment !== 'ALL') {
       list = list.filter(r => r.department === selectedDepartment);
     }
@@ -458,54 +464,143 @@ function App() {
           </div>
         )}
 
-        {/* TAB: ضبط القواعد */}
+        {/* TAB: ضبط القواعد والمجموعات الرسمية */}
         {activeTab === 'rules' && (currentUser.role === 'admin' || currentUser.role === 'manager') && (
           <div className="jalap-card p-6 rounded-3xl space-y-6">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <i className="fa-solid fa-sliders text-[#48a042]"></i> ضبط شروط وبوابات شهر {monthKey}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
               <div>
-                <label className="text-slate-400 block mb-1">نسبة شرط الهدف العام (%)</label>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <i className="fa-solid fa-sliders text-[#48a042]"></i> ضبط شروط وبوابات شهر {monthKey}
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">تحديد نسب التأهل، عمولة الهدف، وتفعيل المجموعات الإلزامية</p>
+              </div>
+              {monthStatus !== 'archived' && (
+                <button
+                  onClick={handleSaveConfig}
+                  className="bg-[#48a042] hover:bg-[#3d8c37] text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg"
+                >
+                  <i className="fa-solid fa-floppy-disk text-amber-300"></i>
+                  <span>حفظ وتثبيت الشروط لشهر {monthKey} 💾</span>
+                </button>
+              )}
+            </div>
+
+            {/* بطاقات الشروط العامة الثلاث */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <label className="text-slate-400 block mb-1.5 font-bold">نسبة شرط الهدف العام (%)</label>
                 <input
                   type="number"
                   disabled={monthStatus === 'archived'}
                   value={generalRules.generalThresholdPct ?? 80}
                   onChange={(e) => setGeneralRules({ ...generalRules, generalThresholdPct: Number(e.target.value) })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-center text-emerald-400 font-bold"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-center text-emerald-400 font-bold font-mono"
                 />
               </div>
-              <div>
-                <label className="text-slate-400 block mb-1">قيمة عمولة الهدف العام (ر.س)</label>
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <label className="text-slate-400 block mb-1.5 font-bold">عمولة الهدف العام (ر.س)</label>
                 <input
                   type="number"
                   disabled={monthStatus === 'archived'}
                   value={generalRules.generalTargetCommValue ?? 0}
                   onChange={(e) => setGeneralRules({ ...generalRules, generalTargetCommValue: Number(e.target.value) })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-center text-amber-300 font-bold"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-center text-amber-300 font-bold font-mono"
                 />
               </div>
-              <div>
-                <label className="text-slate-400 block mb-1">أدنى عدد مجموعات مطلوبة للعمولة</label>
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <label className="text-slate-400 block mb-1.5 font-bold">أدنى عدد مجموعات مطلوبة للعمولة</label>
                 <input
                   type="number"
                   disabled={monthStatus === 'archived'}
                   value={generalRules.minGroupsRequired ?? 7}
                   onChange={(e) => setGeneralRules({ ...generalRules, minGroupsRequired: Number(e.target.value) })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-center text-teal-300 font-bold"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-center text-teal-300 font-bold font-mono"
                 />
               </div>
             </div>
-            {monthStatus !== 'archived' && (
-              <div className="flex justify-end">
-                <button
-                  onClick={handleSaveConfig}
-                  className="bg-[#48a042] hover:bg-[#3d8c37] text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2 shadow"
-                >
-                  <i className="fa-solid fa-floppy-disk"></i> حفظ الشروط رسمياً لشهر {monthKey}
-                </button>
+
+            {/* جدول المجموعات الكامل مع خيارات الإلزامية والتفعيل */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-bold text-slate-300 flex items-center gap-2">
+                <i className="fa-solid fa-boxes-stacked text-[#48a042]"></i> شروط وعمولات المجموعات الـ 14:
+              </h3>
+              <div className="overflow-x-auto border border-slate-800 rounded-2xl">
+                <table className="w-full text-xs text-right text-slate-200">
+                  <thead className="bg-slate-950 text-slate-400 font-bold border-b border-slate-800">
+                    <tr>
+                      <th className="p-3">#</th>
+                      <th className="p-3">اسم المجموعة</th>
+                      <th className="p-3">القسم</th>
+                      <th className="p-3 text-center">إلزامية؟ ⚠️</th>
+                      <th className="p-3">نسبة الشرط (%)</th>
+                      <th className="p-3">قيمة العمولة (ر.س)</th>
+                      <th className="p-3 text-center">مفعلة ✅</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800 font-mono bg-slate-900/50">
+                    {(groupRules || []).map((grp, idx) => (
+                      <tr key={idx} className="hover:bg-slate-800/40">
+                        <td className="p-3 text-slate-500 font-sans">{idx + 1}</td>
+                        <td className="p-3 font-sans font-bold text-white">{grp.name}</td>
+                        <td className="p-3 font-sans text-slate-400 text-[11px]">{grp.department || 'عام'}</td>
+                        <td className="p-3 text-center">
+                          <input
+                            type="checkbox"
+                            disabled={monthStatus === 'archived'}
+                            checked={grp.isMandatory === true}
+                            onChange={(e) => {
+                              const updated = [...groupRules];
+                              updated[idx] = { ...updated[idx], isMandatory: e.target.checked };
+                              setGroupRules(updated);
+                            }}
+                            className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                          />
+                        </td>
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            disabled={monthStatus === 'archived'}
+                            value={grp.thresholdPct ?? 70}
+                            onChange={(e) => {
+                              const updated = [...groupRules];
+                              updated[idx] = { ...updated[idx], thresholdPct: Number(e.target.value) };
+                              setGroupRules(updated);
+                            }}
+                            className="w-20 bg-slate-950 border border-slate-700 rounded-lg p-1 text-center text-teal-300 font-bold"
+                          />
+                        </td>
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            disabled={monthStatus === 'archived'}
+                            value={grp.commValue ?? 250}
+                            onChange={(e) => {
+                              const updated = [...groupRules];
+                              updated[idx] = { ...updated[idx], commValue: Number(e.target.value) };
+                              setGroupRules(updated);
+                            }}
+                            className="w-24 bg-slate-950 border border-slate-700 rounded-lg p-1 text-center text-emerald-400 font-bold"
+                          />
+                        </td>
+                        <td className="p-3 text-center">
+                          <input
+                            type="checkbox"
+                            disabled={monthStatus === 'archived'}
+                            checked={grp.isActive !== false}
+                            onChange={(e) => {
+                              const updated = [...groupRules];
+                              updated[idx] = { ...updated[idx], isActive: e.target.checked };
+                              setGroupRules(updated);
+                            }}
+                            className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
+            </div>
           </div>
         )}
       </main>
