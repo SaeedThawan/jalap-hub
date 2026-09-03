@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+:root {
+  --jalap-green: #48a042;
+  --jalap-blue: #026cb5;
+  --bg-dark: #090e17;
+  --panel-dark: #0f172a;
+}
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background-color: var(--bg-dark);
+  color: #f8fafc;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* تخصيص شريط التمرير */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #48a042;
+}
+
+/* بطاقات وهوية جلب العالمية */
+.jalap-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  transition: all 0.2s ease-in-out;
+}
+.jalap-card:hover {
+  border-color: #48a042;
+}
+
+.jalap-badge-green {
+  background-color: rgba(72, 160, 66, 0.15);
+  color: #5ade51;
+  border: 1px solid rgba(72, 160, 66, 0.35);
+}
+
+.jalap-badge-blue {
+  background-color: rgba(2, 108, 181, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(2, 108, 181, 0.35);
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
