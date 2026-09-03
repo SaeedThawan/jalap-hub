@@ -672,3 +672,34 @@ function App() {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+{/* شريط المطابقة والتحقق المالي الرقابي */}
+        {currentUser.role !== 'rep' && (
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs">
+            <div className="flex items-center gap-2 font-sans">
+              <i className="fa-solid fa-scale-balanced text-[#48a042] text-base"></i>
+              <div>
+                <span className="font-bold text-white block">المطابقة والتحقق الرقابي للمبيعات:</span>
+                <span className="text-[11px] text-slate-400">مقارنة صافي مبيعات الفواتير العامة مع مجموع مبيعات المجموعات</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                <span className="text-slate-400 text-[10px] block font-sans">داخل المجموعات الـ 14:</span>
+                <b className="text-emerald-400 text-sm">{formatNum(companyTotals.repGroupsSalesTotal)} ر.س</b>
+              </div>
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                <span className="text-slate-400 text-[10px] block font-sans">أصناف خارج المجموعات (غير مضمنة):</span>
+                <b className={`text-sm ${companyTotals.unmappedSalesTotal > 0 ? 'text-amber-400' : 'text-slate-400'}`}>
+                  {formatNum(companyTotals.unmappedSalesTotal)} ر.س
+                </b>
+              </div>
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                <span className="text-slate-400 text-[10px] block font-sans">نسبة التغطية والمطابقة:</span>
+                <b className={`text-sm ${companyTotals.coveragePct >= 95 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {companyTotals.coveragePct.toFixed(1)}%
+                </b>
+              </div>
+            </div>
+          </div>
+        )}
