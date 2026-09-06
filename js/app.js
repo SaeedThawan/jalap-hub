@@ -1,6 +1,5 @@
 /**
- * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v42.0
- * يدعم إظهار الأشهر تلقائياً وعرض تاريخ أحدث فاتورة مبيعات
+ * تطبيق بوابة جلب العالمية - App v43.0
  */
 const { useState, useEffect, useMemo } = React;
 
@@ -74,11 +73,7 @@ function App() {
         if (data.availableMonths && data.availableMonths.length > 0) {
           setAvailableMonths(data.availableMonths);
         }
-        if (data.latestSalesDate) {
-          setLatestSalesDate(data.latestSalesDate);
-        } else {
-          setLatestSalesDate(null);
-        }
+        setLatestSalesDate(data.latestSalesDate || null);
         if (data.generalRules) setGeneralRules(data.generalRules);
         if (data.groupRules) setGroupRules(data.groupRules);
         if (data.reps) setRepsData(data.reps);
@@ -97,7 +92,7 @@ function App() {
     if (currentUser.role !== 'admin' && currentUser.role !== 'manager') return;
     setSyncLoading(true);
     try {
-      const res = await ApiService.saveOfficialConfig(monthKey, { generalRules, reps: repsData }, currentUser);
+      const res = await ApiService.saveOfficialConfig(monthKey, { generalRules, groupRules, reps: repsData }, currentUser);
       showToast(res.message || 'تم حفظ التعديلات بنجاح 💾');
       loadData(currentUser, monthKey);
     } catch(e) {
@@ -159,16 +154,8 @@ function App() {
     return list;
   }, [processedReps, selectedDepartment, searchTerm]);
 
-  // إجماليات الجدول
   const tableSummary = useMemo(() => {
-    let totalTarget = 0;
-    let totalSales = 0;
-    let totalGroupComm = 0;
-    let totalGenComm = 0;
-    let totalGrandComm = 0;
-    let totalQualifiedGroups = 0;
-    let totalAssignedGroups = 0;
-
+    let totalTarget = 0, totalSales = 0, totalGroupComm = 0, totalGenComm = 0, totalGrandComm = 0, totalQualifiedGroups = 0, totalAssignedGroups = 0;
     visibleReps.forEach(r => {
       totalTarget += (r.genTarget || 0);
       totalSales += (r.genSales || 0);
@@ -178,19 +165,8 @@ function App() {
       totalQualifiedGroups += (r.qualifiedGroupsCount || 0);
       totalAssignedGroups += (r.assignedGroupsCount || 0);
     });
-
     const totalPct = totalTarget > 0 ? (totalSales / totalTarget) * 100 : 0;
-
-    return {
-      totalTarget,
-      totalSales,
-      totalPct,
-      totalGroupComm,
-      totalGenComm,
-      totalGrandComm,
-      totalQualifiedGroups,
-      totalAssignedGroups
-    };
+    return { totalTarget, totalSales, totalPct, totalGroupComm, totalGenComm, totalGrandComm, totalQualifiedGroups, totalAssignedGroups };
   }, [visibleReps]);
 
   const sortedModalGroups = useMemo(() => {
@@ -256,15 +232,12 @@ function App() {
                   <i className={`fa-solid ${monthStatus === 'archived' ? 'fa-lock' : 'fa-pen-to-square'} ml-1`}></i>
                   {monthStatus === 'archived' ? 'شهر مؤرشف ومجمد 🔒' : 'شهر مفتوح للتعديل ✍️'}
                 </span>
-                
-                {/* شارة تاريخ آخر فاتورة مبيعات */}
                 {latestSalesDate && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">
                     <i className="fa-solid fa-clock-rotate-left ml-1 text-cyan-400"></i>
                     محدث حتى مبيعات: {latestSalesDate}
                   </span>
                 )}
-
                 {archivedAt && <span className="text-[10px] text-slate-400 font-mono">تاريخ التجميد: {archivedAt}</span>}
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">المستخدم: <b className="text-emerald-400">{currentUser.fullName}</b> | القسم: <b className="text-slate-200">{currentUser.department}</b> | الفرع: <b className="text-slate-200">{currentUser.branch}</b></p>
@@ -272,7 +245,6 @@ function App() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap text-xs">
-            {/* اختيار الشهر الديناميكي */}
             <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-2.5 py-1.5 rounded-xl">
               <i className="fa-solid fa-calendar text-[#48a042]"></i>
               <select value={monthKey} onChange={(e) => setMonthKey(e.target.value)} className="bg-transparent text-white font-mono font-bold focus:outline-none cursor-pointer">
@@ -315,7 +287,6 @@ function App() {
       {notification && <div className="fixed bottom-5 left-5 z-50 bg-[#48a042] text-white px-4 py-2.5 rounded-2xl shadow-2xl font-bold text-xs animate-bounce">{notification}</div>}
 
       <main className="max-w-7xl mx-auto px-4 mt-6 space-y-6">
-        {/* كروت الإجماليات */}
         {currentUser.role !== 'rep' && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 font-mono">
             <div className="jalap-card p-3.5 rounded-2xl text-right">
@@ -347,7 +318,6 @@ function App() {
           </div>
         )}
 
-        {/* شريط التحقق والمطابقة */}
         {currentUser.role !== 'rep' && (
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs shadow-md">
             <div className="flex items-center gap-2 font-sans">
@@ -378,7 +348,6 @@ function App() {
           </div>
         )}
 
-        {/* الجدول الرئيسي */}
         {activeTab === 'summary' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -451,7 +420,6 @@ function App() {
                     ))}
                   </tbody>
 
-                  {/* صف الإجمالي التراكمي الشامل */}
                   <tfoot className="bg-slate-950 text-white font-bold border-t-2 border-emerald-500/60 font-mono text-xs">
                     <tr>
                       <td colSpan="3" className="py-3.5 px-3 font-sans text-emerald-400 text-sm font-black">
@@ -477,7 +445,6 @@ function App() {
           </div>
         )}
 
-        {/* ضبط القواعد */}
         {activeTab === 'rules' && (currentUser.role === 'admin' || currentUser.role === 'manager') && (
           <div className="jalap-card p-6 rounded-3xl space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
@@ -532,11 +499,9 @@ function App() {
         )}
       </main>
 
-      {/* نافذة التفاصيل */}
       {selectedRep && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
           <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl space-y-4 font-sans text-right max-h-[95vh] flex flex-col">
-            
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
