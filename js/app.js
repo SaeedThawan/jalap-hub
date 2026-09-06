@@ -1,6 +1,6 @@
 /**
- * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v40.0
- * إصلاح خطأ نافذة التفاصيل وعرض الإجماليات بدقة
+ * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v41.0
+ * إضافة صف الإجمالي النهائي لجدول المناديب الرئيسي
  */
 const { useState, useEffect, useMemo } = React;
 
@@ -153,7 +153,40 @@ function App() {
     return list;
   }, [processedReps, selectedDepartment, searchTerm]);
 
-  // فرز المجموعات: المحققة أولاً، ثم المكلفة غير المحققة، ثم غير المكلفة
+  // إجماليات الجدول المعروض حالياً
+  const tableSummary = useMemo(() => {
+    let totalTarget = 0;
+    let totalSales = 0;
+    let totalGroupComm = 0;
+    let totalGenComm = 0;
+    let totalGrandComm = 0;
+    let totalQualifiedGroups = 0;
+    let totalAssignedGroups = 0;
+
+    visibleReps.forEach(r => {
+      totalTarget += (r.genTarget || 0);
+      totalSales += (r.genSales || 0);
+      totalGroupComm += (r.totalGroupCommissionEarned || 0);
+      totalGenComm += (r.generalTargetCommEarned || 0);
+      totalGrandComm += (r.grandTotalCommission || 0);
+      totalQualifiedGroups += (r.qualifiedGroupsCount || 0);
+      totalAssignedGroups += (r.assignedGroupsCount || 0);
+    });
+
+    const totalPct = totalTarget > 0 ? (totalSales / totalTarget) * 100 : 0;
+
+    return {
+      totalTarget,
+      totalSales,
+      totalPct,
+      totalGroupComm,
+      totalGenComm,
+      totalGrandComm,
+      totalQualifiedGroups,
+      totalAssignedGroups
+    };
+  }, [visibleReps]);
+
   const sortedModalGroups = useMemo(() => {
     if (!selectedRep || !selectedRep.detailedGroups) return [];
     return [...selectedRep.detailedGroups].sort((a, b) => {
@@ -266,7 +299,7 @@ function App() {
       {notification && <div className="fixed bottom-5 left-5 z-50 bg-[#48a042] text-white px-4 py-2.5 rounded-2xl shadow-2xl font-bold text-xs animate-bounce">{notification}</div>}
 
       <main className="max-w-7xl mx-auto px-4 mt-6 space-y-6">
-        {/* كروت الإجماليات التنفيذية - منسقة باتجاه LTR لمنع اختفاء الأرقام والعملة */}
+        {/* كروت الإجماليات التنفيذية */}
         {currentUser.role !== 'rep' && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 font-mono">
             <div className="jalap-card p-3.5 rounded-2xl text-right">
@@ -329,7 +362,7 @@ function App() {
           </div>
         )}
 
-        {/* TAB: جدول أداء المناديب */}
+        {/* TAB: جدول أداء المناديب الرئيسي مع صف الإجمالي الختامي */}
         {activeTab === 'summary' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -401,6 +434,27 @@ function App() {
                       </tr>
                     ))}
                   </tbody>
+
+                  {/* صف الإجمالي التراكمي الشامل */}
+                  <tfoot className="bg-slate-950 text-white font-bold border-t-2 border-emerald-500/60 font-mono text-xs">
+                    <tr>
+                      <td colSpan="3" className="py-3.5 px-3 font-sans text-emerald-400 text-sm font-black">
+                        <i className="fa-solid fa-calculator ml-1"></i> الإجمالي التراكمي:
+                      </td>
+                      <td className="py-3.5 px-3 text-slate-300">{formatNum(tableSummary.totalTarget)}</td>
+                      <td className="py-3.5 px-3 text-white text-sm font-black">{formatNum(tableSummary.totalSales)}</td>
+                      <td className="py-3.5 px-3 text-emerald-400 font-black">{tableSummary.totalPct.toFixed(1)}%</td>
+                      <td className="py-3.5 px-3 text-center text-teal-300">{tableSummary.totalQualifiedGroups} / {tableSummary.totalAssignedGroups}</td>
+                      <td className="py-3.5 px-3 text-teal-300 font-bold" dir="ltr">{formatNum(tableSummary.totalGroupComm)} SAR</td>
+                      <td className="py-3.5 px-3 text-amber-300 font-bold" dir="ltr">{formatNum(tableSummary.totalGenComm)} SAR</td>
+                      <td className="py-3.5 px-3 bg-emerald-950/60 text-emerald-400 font-black text-sm" dir="ltr">
+                        {formatNum(tableSummary.totalGrandComm)} SAR
+                      </td>
+                      <td colSpan="2" className="py-3.5 px-3 text-center font-sans text-slate-400 text-[11px]">
+                        عدد المناديب: {visibleReps.length}
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
@@ -462,12 +516,11 @@ function App() {
         )}
       </main>
 
-      {/* نافذة التفاصيل المصححة والآمنة 100% */}
+      {/* نافذة التفاصيل */}
       {selectedRep && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
           <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl space-y-4 font-sans text-right max-h-[95vh] flex flex-col">
             
-            {/* الترويسة */}
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
@@ -481,7 +534,6 @@ function App() {
               </button>
             </div>
 
-            {/* بطاقات المؤشرات العلوية */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
               <div className="bg-slate-950/80 border border-slate-800 p-2.5 rounded-2xl">
                 <span className="text-slate-400 block text-[11px] font-sans">الهدف العام / المبيعات</span>
@@ -511,7 +563,6 @@ function App() {
               </div>
             </div>
 
-            {/* شريط سبب الحجب أو الاستحقاق */}
             <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${
               selectedRep.isGroupsGateQualified ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
             }`}>
@@ -519,7 +570,6 @@ function App() {
               <span>{selectedRep.eligibilityStatusText}</span>
             </div>
 
-            {/* جدول المجموعات المرتب والمصحح */}
             <div className="overflow-x-auto flex-1 overflow-y-auto border border-slate-800 rounded-2xl">
               <table className="w-full text-xs text-right text-slate-200">
                 <thead className="bg-slate-950 text-slate-400 sticky top-0 font-bold text-[11px] border-b border-slate-800">
@@ -595,7 +645,6 @@ function App() {
               </table>
             </div>
 
-            {/* الإغلاق */}
             <div className="flex justify-between items-center pt-2">
               <span className="text-[11px] text-slate-500 font-sans">تم فرز المجموعات المحققة في الأعلى لتسهيل المراجعة</span>
               <button
