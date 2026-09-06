@@ -1,6 +1,6 @@
 /**
- * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v39.0
- * نافذة تفاصيل متطورة مع ترتيب المجموعات المحققة أولاً وإحصائيات شفافة
+ * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v40.0
+ * إصلاح خطأ نافذة التفاصيل وعرض الإجماليات بدقة
  */
 const { useState, useEffect, useMemo } = React;
 
@@ -153,7 +153,7 @@ function App() {
     return list;
   }, [processedReps, selectedDepartment, searchTerm]);
 
-  // تجهيز مجموعات المندوب المختار مرتبة (المحققة أولاً، ثم المتبقية، ثم غير المكلف بها)
+  // فرز المجموعات: المحققة أولاً، ثم المكلفة غير المحققة، ثم غير المكلفة
   const sortedModalGroups = useMemo(() => {
     if (!selectedRep || !selectedRep.detailedGroups) return [];
     return [...selectedRep.detailedGroups].sort((a, b) => {
@@ -266,34 +266,34 @@ function App() {
       {notification && <div className="fixed bottom-5 left-5 z-50 bg-[#48a042] text-white px-4 py-2.5 rounded-2xl shadow-2xl font-bold text-xs animate-bounce">{notification}</div>}
 
       <main className="max-w-7xl mx-auto px-4 mt-6 space-y-6">
-        {/* كروت الإجماليات التنفيذية */}
+        {/* كروت الإجماليات التنفيذية - منسقة باتجاه LTR لمنع اختفاء الأرقام والعملة */}
         {currentUser.role !== 'rep' && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 font-mono">
-            <div className="jalap-card p-3.5 rounded-2xl">
+            <div className="jalap-card p-3.5 rounded-2xl text-right">
               <span className="text-slate-400 text-xs block mb-1 font-sans">المبيعات العامة</span>
-              <span className="text-base font-extrabold text-white">{formatNum(companyTotals.genSales)}</span>
+              <span className="text-base font-extrabold text-white block">{formatNum(companyTotals.genSales)}</span>
               <span className="text-[10px] text-slate-400 block mt-0.5 font-sans">المستهدف: {formatNum(companyTotals.genTarget)}</span>
             </div>
-            <div className="jalap-card p-3.5 rounded-2xl">
+            <div className="jalap-card p-3.5 rounded-2xl text-right">
               <span className="text-slate-400 text-xs block mb-1 font-sans">نسبة الإنجاز</span>
-              <span className={`text-base font-extrabold ${companyTotals.overallGenPct >= generalRules.generalThresholdPct ? 'text-emerald-400' : 'text-amber-400'}`}>
+              <span className={`text-base font-extrabold block ${companyTotals.overallGenPct >= generalRules.generalThresholdPct ? 'text-emerald-400' : 'text-amber-400'}`}>
                 {companyTotals.overallGenPct.toFixed(1)}%
               </span>
               <span className="text-[10px] text-slate-400 block mt-0.5 font-sans">المتبقي: {formatNum(companyTotals.remainingGenSalesTotal)}</span>
             </div>
-            <div className="jalap-card p-3.5 rounded-2xl">
+            <div className="jalap-card p-3.5 rounded-2xl text-right">
               <span className="text-slate-400 text-xs block mb-1 font-sans">عمولات المجموعات</span>
-              <span className="text-base font-extrabold text-teal-300">{formatNum(companyTotals.groupCommSum)} ر.س</span>
+              <span className="text-base font-extrabold text-teal-300 block" dir="ltr">{formatNum(companyTotals.groupCommSum)} SAR</span>
               <span className="text-[10px] text-slate-400 block mt-0.5 font-sans">{companyTotals.qualifiedCount} مؤهلين</span>
             </div>
-            <div className="jalap-card p-3.5 rounded-2xl">
+            <div className="jalap-card p-3.5 rounded-2xl text-right">
               <span className="text-slate-400 text-xs block mb-1 font-sans">عمولة الهدف العام</span>
-              <span className="text-base font-extrabold text-amber-300">{formatNum(companyTotals.genTargetCommSum)} ر.س</span>
+              <span className="text-base font-extrabold text-amber-300 block" dir="ltr">{formatNum(companyTotals.genTargetCommSum)} SAR</span>
               <span className="text-[10px] text-slate-400 block mt-0.5 font-sans">شرط {generalRules.generalThresholdPct}%</span>
             </div>
-            <div className="jalap-card border border-emerald-500/40 bg-emerald-950/20 p-3.5 rounded-2xl col-span-2 md:col-span-1">
-              <span className="text-emerald-300 text-xs font-bold mb-1 font-sans">إجمالي العمولات المستحقة</span>
-              <span className="text-lg font-black text-emerald-400">{formatNum(companyTotals.grandComm)} ر.س</span>
+            <div className="jalap-card border border-emerald-500/40 bg-emerald-950/20 p-3.5 rounded-2xl col-span-2 md:col-span-1 text-right">
+              <span className="text-emerald-300 text-xs font-bold mb-1 font-sans block">إجمالي العمولات المستحقة</span>
+              <span className="text-lg font-black text-emerald-400 block" dir="ltr">{formatNum(companyTotals.grandComm)} SAR</span>
             </div>
           </div>
         )}
@@ -309,22 +309,27 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-4 flex-wrap">
-              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-right">
                 <span className="text-slate-400 text-[10px] block font-sans">داخل المجموعات الـ 14:</span>
-                <b className="text-emerald-400 text-sm">{formatNum(companyTotals.repGroupsSalesTotal)} ر.س</b>
+                <b className="text-emerald-400 text-sm block" dir="ltr">{formatNum(companyTotals.repGroupsSalesTotal)} SAR</b>
               </div>
-              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-right">
                 <span className="text-slate-400 text-[10px] block font-sans">أصناف خارج المجموعات:</span>
-                <b className={`text-sm ${companyTotals.unmappedSalesTotal > 0 ? 'text-amber-400' : 'text-slate-400'}`}>{formatNum(companyTotals.unmappedSalesTotal)} ر.س</b>
+                <b className={`text-sm block ${companyTotals.unmappedSalesTotal > 0 ? 'text-amber-400' : 'text-slate-400'}`} dir="ltr">
+                  {formatNum(companyTotals.unmappedSalesTotal)} SAR
+                </b>
               </div>
-              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-right">
                 <span className="text-slate-400 text-[10px] block font-sans">نسبة التغطية والمطابقة:</span>
-                <b className={`text-sm ${companyTotals.coveragePct >= 95 ? 'text-emerald-400' : 'text-rose-400'}`}>{companyTotals.coveragePct.toFixed(1)}%</b>
+                <b className={`text-sm block ${companyTotals.coveragePct >= 95 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {companyTotals.coveragePct.toFixed(1)}%
+                </b>
               </div>
             </div>
           </div>
         )}
 
+        {/* TAB: جدول أداء المناديب */}
         {activeTab === 'summary' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -378,11 +383,21 @@ function App() {
                         <td className="py-3 px-3 font-bold text-white">{formatNum(rep.genSales)}</td>
                         <td className="py-3 px-3"><span className={`font-bold ${rep.passGate_GenTarget ? 'text-emerald-400' : 'text-rose-400'}`}>{rep.genPct.toFixed(1)}%</span></td>
                         <td className="py-3 px-3 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${rep.isGroupsGateQualified ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-950 text-rose-300'}`}>{rep.qualifiedGroupsCount} / {rep.assignedGroupsCount}</span></td>
-                        <td className="py-3 px-3 text-teal-300 font-bold">{formatNum(rep.totalGroupCommissionEarned)} ر.س</td>
-                        <td className="py-3 px-3 text-amber-300 font-bold">{formatNum(rep.generalTargetCommEarned)} ر.س</td>
-                        <td className="py-3 px-3 bg-emerald-950/30 font-black text-emerald-400">{formatNum(rep.grandTotalCommission)} ر.س</td>
-                        <td className="py-3 px-3 font-sans text-[11px]"><span className={rep.isGroupsGateQualified ? 'text-emerald-400 font-bold' : 'text-rose-300'}>{rep.eligibilityStatusText}</span></td>
-                        <td className="py-3 px-3 text-center font-sans"><button onClick={() => setSelectedRep(rep)} className="bg-slate-800 hover:bg-[#48a042] hover:text-white text-slate-200 px-3 py-1 rounded-lg text-xs font-bold transition">التفاصيل</button></td>
+                        <td className="py-3 px-3 text-teal-300 font-bold" dir="ltr">{formatNum(rep.totalGroupCommissionEarned)} SAR</td>
+                        <td className="py-3 px-3 text-amber-300 font-bold" dir="ltr">{formatNum(rep.generalTargetCommEarned)} SAR</td>
+                        <td className="py-3 px-3 bg-emerald-950/30 font-black text-emerald-400" dir="ltr">
+                          {formatNum(rep.grandTotalCommission)} SAR
+                        </td>
+                        <td className="py-3 px-3 font-sans text-[11px]">
+                          <span className={rep.isGroupsGateQualified ? 'text-emerald-400 font-bold' : 'text-rose-300'}>
+                            {rep.eligibilityStatusText}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-center font-sans">
+                          <button onClick={() => setSelectedRep(rep)} className="bg-slate-800 hover:bg-[#48a042] hover:text-white text-slate-200 px-3 py-1 rounded-lg text-xs font-bold transition">
+                            التفاصيل
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -392,6 +407,7 @@ function App() {
           </div>
         )}
 
+        {/* TAB: ضبط القواعد الرسمية */}
         {activeTab === 'rules' && (currentUser.role === 'admin' || currentUser.role === 'manager') && (
           <div className="jalap-card p-6 rounded-3xl space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
@@ -446,12 +462,12 @@ function App() {
         )}
       </main>
 
-      {/* نافذة تفاصيل أداء المندوب المطورة والشفافة */}
+      {/* نافذة التفاصيل المصححة والآمنة 100% */}
       {selectedRep && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
           <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl space-y-4 font-sans text-right max-h-[95vh] flex flex-col">
             
-            {/* الترويسة وزر الإغلاق */}
+            {/* الترويسة */}
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
@@ -465,7 +481,7 @@ function App() {
               </button>
             </div>
 
-            {/* بطاقات الإحصائيات العلوية للمندوب */}
+            {/* بطاقات المؤشرات العلوية */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
               <div className="bg-slate-950/80 border border-slate-800 p-2.5 rounded-2xl">
                 <span className="text-slate-400 block text-[11px] font-sans">الهدف العام / المبيعات</span>
@@ -490,12 +506,12 @@ function App() {
               </div>
               <div className="bg-emerald-950/30 border border-emerald-500/40 p-2.5 rounded-2xl">
                 <span className="text-emerald-300 block text-[11px] font-sans font-bold">العمولة المستحقة</span>
-                <b className="text-emerald-400 text-base">{formatNum(selectedRep.grandTotalCommission)} ر.س</b>
+                <b className="text-emerald-400 text-base block" dir="ltr">{formatNum(selectedRep.grandTotalCommission)} SAR</b>
                 <span className="text-slate-400 text-[10px] block font-sans">{selectedRep.isGroupsGateQualified ? 'مؤهلة للصرف 🎯' : 'محجوبة ⚠️'}</span>
               </div>
             </div>
 
-            {/* شريط تنبيه الحالة والشفافية */}
+            {/* شريط سبب الحجب أو الاستحقاق */}
             <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${
               selectedRep.isGroupsGateQualified ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
             }`}>
@@ -503,7 +519,7 @@ function App() {
               <span>{selectedRep.eligibilityStatusText}</span>
             </div>
 
-            {/* جدول المجموعات المرتب (المحققة أولاً) */}
+            {/* جدول المجموعات المرتب والمصحح */}
             <div className="overflow-x-auto flex-1 overflow-y-auto border border-slate-800 rounded-2xl">
               <table className="w-full text-xs text-right text-slate-200">
                 <thead className="bg-slate-950 text-slate-400 sticky top-0 font-bold text-[11px] border-b border-slate-800">
@@ -532,7 +548,7 @@ function App() {
                       <td className="p-2.5 text-slate-300">{formatNum(grp.target)}</td>
                       <td className="p-2.5 font-bold text-white">{formatNum(grp.sales)}</td>
                       <td className="p-2.5">
-                        <span className={`font-bold ${grp.isQualified ? 'text-emerald-400' : gr.grpPct > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
+                        <span className={`font-bold ${grp.isQualified ? 'text-emerald-400' : (grp.grpPct > 0 ? 'text-amber-400' : 'text-slate-500')}`}>
                           {grp.isAssigned ? `${grp.grpPct.toFixed(1)}%` : '-'}
                         </span>
                       </td>
@@ -556,8 +572,8 @@ function App() {
                         )}
                       </td>
                       <td className="p-2.5 text-left font-bold font-mono">
-                        <span className={grp.commEarned > 0 ? 'text-teal-300 text-sm' : 'text-slate-500'}>
-                          {formatNum(grp.commEarned)} ر.س
+                        <span className={grp.commEarned > 0 ? 'text-teal-300 text-sm' : 'text-slate-500'} dir="ltr">
+                          {formatNum(grp.commEarned)} SAR
                         </span>
                       </td>
                     </tr>
@@ -565,23 +581,23 @@ function App() {
                 </tbody>
                 <tfoot className="bg-slate-950 text-slate-200 font-bold border-t border-slate-700 font-mono text-xs">
                   <tr>
-                    <td className="p-2.5 font-sans">إجمالي مبيعات المجموعات:</td>
+                    <td className="p-2.5 font-sans">إجمالي المجموعات:</td>
                     <td className="p-2.5">{formatNum(sortedModalGroups.reduce((s, g) => s + (g.target || 0), 0))}</td>
                     <td className="p-2.5 text-emerald-400">{formatNum(selectedRep.repGroupsSalesTotal)}</td>
                     <td colSpan="4" className="p-2.5 text-center text-slate-400 font-sans">
-                      أصناف خارج المجموعات: <b className="text-amber-400">{formatNum(selectedRep.unmappedSales)} ر.س</b>
+                      أصناف خارج المجموعات: <b className="text-amber-400" dir="ltr">{formatNum(selectedRep.unmappedSales)} SAR</b>
                     </td>
-                    <td className="p-2.5 text-left text-teal-300 font-black text-sm">
-                      {formatNum(selectedRep.totalGroupCommissionEarned)} ر.س
+                    <td className="p-2.5 text-left text-teal-300 font-black text-sm" dir="ltr">
+                      {formatNum(selectedRep.totalGroupCommissionEarned)} SAR
                     </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
 
-            {/* زر الإغلاق السفلي */}
+            {/* الإغلاق */}
             <div className="flex justify-between items-center pt-2">
-              <span className="text-[11px] text-slate-500">تم ترتيب المجموعات المحققة في الأعلى لتسهيل المتابعة</span>
+              <span className="text-[11px] text-slate-500 font-sans">تم فرز المجموعات المحققة في الأعلى لتسهيل المراجعة</span>
               <button
                 onClick={() => setSelectedRep(null)}
                 className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-2 rounded-xl text-xs transition"
