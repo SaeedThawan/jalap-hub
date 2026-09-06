@@ -1,12 +1,11 @@
 /**
- * محرك الاتصال بالسيرفر - ApiService v43.0
+ * محرك الاتصال بالسيرفر - ApiService المباشر
  */
+const JALAP_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw1DTvmz2e-eoKP-FxRD0I-742FwPFi6Fk3ag201fw4QWC3Sodq63R4O07fGY92T7Yi/exec';
+
 const ApiService = {
   getUrl() {
-    if (typeof CONFIG !== 'undefined' && CONFIG.APPS_SCRIPT_URL) {
-      return CONFIG.APPS_SCRIPT_URL;
-    }
-    throw new Error('CONFIG.APPS_SCRIPT_URL is not defined');
+    return JALAP_BACKEND_URL;
   },
 
   async fetchWorkspace(userId, monthKey) {
