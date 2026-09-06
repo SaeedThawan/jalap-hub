@@ -1,6 +1,6 @@
 /**
- * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v41.0
- * إضافة صف الإجمالي النهائي لجدول المناديب الرئيسي
+ * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v42.0
+ * يدعم إظهار الأشهر تلقائياً وعرض تاريخ أحدث فاتورة مبيعات
  */
 const { useState, useEffect, useMemo } = React;
 
@@ -16,10 +16,11 @@ function App() {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
 
-  const [monthKey, setMonthKey] = useState('2026-08');
-  const [availableMonths, setAvailableMonths] = useState(['2026-08']);
+  const [monthKey, setMonthKey] = useState('2026-09');
+  const [availableMonths, setAvailableMonths] = useState(['2026-09', '2026-08']);
   const [monthStatus, setMonthStatus] = useState('open');
   const [archivedAt, setArchivedAt] = useState(null);
+  const [latestSalesDate, setLatestSalesDate] = useState(null);
 
   const [activeTab, setActiveTab] = useState('summary');
   const [selectedDepartment, setSelectedDepartment] = useState('ALL');
@@ -68,11 +69,16 @@ function App() {
     const activeUser = user || currentUser;
     const m = targetMonth || monthKey;
     try {
-      const mListRes = await ApiService.getAvailableMonths();
-      if (mListRes && mListRes.months && mListRes.months.length > 0) setAvailableMonths(mListRes.months);
-
       const data = await ApiService.fetchWorkspace(activeUser.userId, m);
       if (data && data.status === 'success') {
+        if (data.availableMonths && data.availableMonths.length > 0) {
+          setAvailableMonths(data.availableMonths);
+        }
+        if (data.latestSalesDate) {
+          setLatestSalesDate(data.latestSalesDate);
+        } else {
+          setLatestSalesDate(null);
+        }
         if (data.generalRules) setGeneralRules(data.generalRules);
         if (data.groupRules) setGroupRules(data.groupRules);
         if (data.reps) setRepsData(data.reps);
@@ -153,7 +159,7 @@ function App() {
     return list;
   }, [processedReps, selectedDepartment, searchTerm]);
 
-  // إجماليات الجدول المعروض حالياً
+  // إجماليات الجدول
   const tableSummary = useMemo(() => {
     let totalTarget = 0;
     let totalSales = 0;
@@ -250,6 +256,15 @@ function App() {
                   <i className={`fa-solid ${monthStatus === 'archived' ? 'fa-lock' : 'fa-pen-to-square'} ml-1`}></i>
                   {monthStatus === 'archived' ? 'شهر مؤرشف ومجمد 🔒' : 'شهر مفتوح للتعديل ✍️'}
                 </span>
+                
+                {/* شارة تاريخ آخر فاتورة مبيعات */}
+                {latestSalesDate && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">
+                    <i className="fa-solid fa-clock-rotate-left ml-1 text-cyan-400"></i>
+                    محدث حتى مبيعات: {latestSalesDate}
+                  </span>
+                )}
+
                 {archivedAt && <span className="text-[10px] text-slate-400 font-mono">تاريخ التجميد: {archivedAt}</span>}
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">المستخدم: <b className="text-emerald-400">{currentUser.fullName}</b> | القسم: <b className="text-slate-200">{currentUser.department}</b> | الفرع: <b className="text-slate-200">{currentUser.branch}</b></p>
@@ -257,6 +272,7 @@ function App() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap text-xs">
+            {/* اختيار الشهر الديناميكي */}
             <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-2.5 py-1.5 rounded-xl">
               <i className="fa-solid fa-calendar text-[#48a042]"></i>
               <select value={monthKey} onChange={(e) => setMonthKey(e.target.value)} className="bg-transparent text-white font-mono font-bold focus:outline-none cursor-pointer">
@@ -299,7 +315,7 @@ function App() {
       {notification && <div className="fixed bottom-5 left-5 z-50 bg-[#48a042] text-white px-4 py-2.5 rounded-2xl shadow-2xl font-bold text-xs animate-bounce">{notification}</div>}
 
       <main className="max-w-7xl mx-auto px-4 mt-6 space-y-6">
-        {/* كروت الإجماليات التنفيذية */}
+        {/* كروت الإجماليات */}
         {currentUser.role !== 'rep' && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 font-mono">
             <div className="jalap-card p-3.5 rounded-2xl text-right">
@@ -331,7 +347,7 @@ function App() {
           </div>
         )}
 
-        {/* شريط التحقق والمطابقة المالية الرقابي */}
+        {/* شريط التحقق والمطابقة */}
         {currentUser.role !== 'rep' && (
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs shadow-md">
             <div className="flex items-center gap-2 font-sans">
@@ -343,7 +359,7 @@ function App() {
             </div>
             <div className="flex items-center gap-4 flex-wrap">
               <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-right">
-                <span className="text-slate-400 text-[10px] block font-sans">داخل المجموعات الـ 14:</span>
+                <span className="text-slate-400 text-[10px] block font-sans">داخل المجموعات:</span>
                 <b className="text-emerald-400 text-sm block" dir="ltr">{formatNum(companyTotals.repGroupsSalesTotal)} SAR</b>
               </div>
               <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-right">
@@ -362,7 +378,7 @@ function App() {
           </div>
         )}
 
-        {/* TAB: جدول أداء المناديب الرئيسي مع صف الإجمالي الختامي */}
+        {/* الجدول الرئيسي */}
         {activeTab === 'summary' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -461,7 +477,7 @@ function App() {
           </div>
         )}
 
-        {/* TAB: ضبط القواعد الرسمية */}
+        {/* ضبط القواعد */}
         {activeTab === 'rules' && (currentUser.role === 'admin' || currentUser.role === 'manager') && (
           <div className="jalap-card p-6 rounded-3xl space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
@@ -481,16 +497,16 @@ function App() {
               </div>
               <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
                 <label className="text-slate-400 block mb-1.5 font-bold">عمولة الهدف العام (ر.س)</label>
-                <input type="number" disabled={monthStatus === 'archived'} value={generalRules.generalTargetCommValue ?? 0} onChange={(e) => setGeneralRules({ ...generalRules, generalTargetCommValue: Number(e.target.value) })} className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-center text-amber-300 font-bold font-mono" />
+                <input type="number" disabled={monthStatus === 'archived'} value={generalRules.generalTargetCommValue ?? 500} onChange={(e) => setGeneralRules({ ...generalRules, generalTargetCommValue: Number(e.target.value) })} className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-center text-amber-300 font-bold font-mono" />
               </div>
               <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
                 <label className="text-slate-400 block mb-1.5 font-bold">أدنى عدد مجموعات مطلوبة للعمولة</label>
-                <input type="number" disabled={monthStatus === 'archived'} value={generalRules.minGroupsRequired ?? 7} onChange={(e) => setGeneralRules({ ...generalRules, minGroupsRequired: Number(e.target.value) })} className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-center text-teal-300 font-bold font-mono" />
+                <input type="number" disabled={monthStatus === 'archived'} value={generalRules.minGroupsRequired ?? 10} onChange={(e) => setGeneralRules({ ...generalRules, minGroupsRequired: Number(e.target.value) })} className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-center text-teal-300 font-bold font-mono" />
               </div>
             </div>
 
             <div className="space-y-3 pt-2">
-              <h3 className="text-xs font-bold text-slate-300 flex items-center gap-2"><i className="fa-solid fa-boxes-stacked text-[#48a042]"></i> شروط وعمولات المجموعات الـ 14:</h3>
+              <h3 className="text-xs font-bold text-slate-300 flex items-center gap-2"><i className="fa-solid fa-boxes-stacked text-[#48a042]"></i> شروط وعمولات المجموعات الـ 15:</h3>
               <div className="overflow-x-auto border border-slate-800 rounded-2xl">
                 <table className="w-full text-xs text-right text-slate-200">
                   <thead className="bg-slate-950 text-slate-400 font-bold border-b border-slate-800">
