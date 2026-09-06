@@ -1,5 +1,6 @@
 /**
- * محرك احتساب الأداء، العمولات، وشريط التحقق المالي الرقابي v20.0
+ * منظومة جلب العالمية - محرك احتساب الأداء والعمولات والتحقق المالي v36.0
+ * مطابق تماماً لمعادلات الإكسل وشيت Monthly_Targets_Entry
  */
 
 const CalcEngine = {
@@ -10,7 +11,7 @@ const CalcEngine = {
     const gRules = generalRules || CONFIG.DEFAULT_GENERAL_RULES;
     const grpRulesList = (groupRules && Array.isArray(groupRules)) ? groupRules : [];
 
-    // 1. تقييم الهدف العام
+    // 1. تقييم الهدف العام (الصافي بدون ضريبة)
     const genTarget = Number(rep.generalTarget || rep.genTarget || 0);
     const genSales = Number(rep.generalSales || rep.genSales || 0);
     const genPct = genTarget > 0 ? (genSales / genTarget) * 100 : 0;
@@ -20,7 +21,7 @@ const CalcEngine = {
     const passGate_GenTarget = genTarget > 0 ? (genPct >= genThresholdPct) : false;
     const remainingGenSales = genTarget > 0 ? Math.max(0, (genTarget * (genThresholdPct / 100)) - genSales) : 0;
 
-    // 2. تقييم المجموعات
+    // 2. تقييم المجموعات الـ 14
     let assignedGroupsCount = 0;
     let qualifiedGroupsCount = 0;
     let failedMandatoryGroups = [];
@@ -29,6 +30,7 @@ const CalcEngine = {
     const repGroups = Array.isArray(rep.groups) ? rep.groups : [];
 
     const detailedGroups = grpRulesList.map((rule, gIdx) => {
+      // مطابقة المجموعة بالاسم أو المعرف
       const repGrp = repGroups.find(rg => rg.name === rule.name || rg.id === rule.id) || repGroups[gIdx] || { target: 0, sales: 0, customComm: null };
       const isGroupActive = rule.isActive !== false;
       const isGroupMandatory = rule.isMandatory === true;
@@ -37,6 +39,7 @@ const CalcEngine = {
       const grpSales = Number(repGrp.sales || 0);
       repGroupsSalesTotal += grpSales;
 
+      // المجموعة تعتبر مكلفة إذا كان هدفها في شيت الأهداف أكبر من صفر
       const isAssigned = grpTarget > 0;
       const grpPct = isAssigned ? (grpSales / grpTarget) * 100 : 0;
       
@@ -44,6 +47,7 @@ const CalcEngine = {
       const thresholdTargetSales = grpTarget * (thresholdPct / 100);
       const remainingToThreshold = isAssigned ? Math.max(0, thresholdTargetSales - grpSales) : 0;
       
+      // تحقق شرط المجموعة
       const isQualified = isGroupActive && isAssigned && (grpPct >= thresholdPct);
 
       if (isAssigned) assignedGroupsCount++;
@@ -86,28 +90,32 @@ const CalcEngine = {
       };
     });
 
+    // 3. بوابات الاستحقاق (بوابة الهدف العام + أدنى عدد مجموعات مطلوبة)
     const minGroupsReq = Number(gRules.minGroupsRequired !== undefined ? gRules.minGroupsRequired : 7);
     const effectiveMinGroupsReq = assignedGroupsCount > 0 ? Math.min(minGroupsReq, assignedGroupsCount) : 0;
+    
     const passGate_MinGroupsCount = assignedGroupsCount === 0 || qualifiedGroupsCount >= effectiveMinGroupsReq;
     const passGate_MandatoryGroups = failedMandatoryGroups.length === 0;
 
-    // 3. احتساب الاستحقاق
     const meetsGenTargetReq = !isGenTargetMandatory || passGate_GenTarget;
     const isEligibleForGroupCommissions = isRepActive && meetsGenTargetReq && passGate_MandatoryGroups && passGate_MinGroupsCount;
     
+    // احتساب العمولات المستحقة
     const totalGroupCommissionEarned = isEligibleForGroupCommissions ? rawGroupCommSum : 0;
     const isEligibleForGenTargetComm = isRepActive && passGate_GenTarget;
     const generalTargetCommEarned = isEligibleForGenTargetComm ? (Number(gRules.generalTargetCommValue) || 0) : 0;
     const grandTotalCommission = totalGroupCommissionEarned + generalTargetCommEarned;
 
+    // صافي المبيعات التي لم تدخل في أي مجموعة
     const unmappedSales = Math.max(0, genSales - repGroupsSalesTotal);
 
+    // صياغة أسباب الحجب للشفافية
     let blockers = [];
     if (isGenTargetMandatory && !passGate_GenTarget) {
       blockers.push(`باقي للهدف العام ${Math.round(remainingGenSales).toLocaleString()} ر.س`);
     }
     if (!passGate_MandatoryGroups) {
-      blockers.push(`أصناف إلزامية غير محققة: [${failedMandatoryGroups.join('، ')}]`);
+      blockers.push(`مجموعات إلزامية غير محققة: [${failedMandatoryGroups.join('، ')}]`);
     }
     if (assignedGroupsCount > 0 && !passGate_MinGroupsCount) {
       blockers.push(`حقق ${qualifiedGroupsCount} من أصل ${effectiveMinGroupsReq} مجموعات مطلوبة`);
