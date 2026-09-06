@@ -17,11 +17,7 @@ const ApiService = {
   async recalculateRawData(monthKey, userContext) {
     const res = await fetch(CONFIG.API_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'recalculateRawData',
-        monthKey,
-        userContext
-      })
+      body: JSON.stringify({ action: 'recalculateRawData', monthKey, userContext })
     });
     return await res.json();
   },
@@ -29,13 +25,7 @@ const ApiService = {
   async saveOfficialConfig(monthKey, data, userContext) {
     const res = await fetch(CONFIG.API_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'saveOfficialConfig',
-        monthKey,
-        generalRules: data.generalRules,
-        reps: data.reps,
-        userContext
-      })
+      body: JSON.stringify({ action: 'saveOfficialConfig', monthKey, generalRules: data.generalRules, reps: data.reps, userContext })
     });
     return await res.json();
   },
@@ -43,13 +33,7 @@ const ApiService = {
   async freezeAndArchiveMonth(monthKey, processedReps, generalRules, userContext) {
     const res = await fetch(CONFIG.API_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'freezeAndArchiveMonth',
-        monthKey,
-        processedReps,
-        generalRules,
-        userContext
-      })
+      body: JSON.stringify({ action: 'freezeAndArchiveMonth', monthKey, processedReps, generalRules, userContext })
     });
     return await res.json();
   },
@@ -57,11 +41,7 @@ const ApiService = {
   async unlockMonth(monthKey, userContext) {
     const res = await fetch(CONFIG.API_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'unlockMonth',
-        monthKey,
-        userContext
-      })
+      body: JSON.stringify({ action: 'unlockMonth', monthKey, userContext })
     });
     return await res.json();
   }
@@ -71,11 +51,7 @@ const AuthService = {
   async login(username, password) {
     const res = await fetch(CONFIG.API_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'login',
-        username,
-        password
-      })
+      body: JSON.stringify({ action: 'login', username, password })
     });
     return await res.json();
   }
