@@ -342,7 +342,7 @@ function App() {
           </div>
         )}
 
-        {/* شريط التحقق والمطابقة المالية الرقابي المدمج */}
+        {/* شريط التحقق والمطابقة المالية الرقابي */}
         {currentUser.role !== 'rep' && (
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs shadow-md">
             <div className="flex items-center gap-2 font-sans">
