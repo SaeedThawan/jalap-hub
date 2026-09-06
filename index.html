@@ -15,8 +15,8 @@
   <link rel="stylesheet" href="css/custom.css">
   
   <!-- React 18 & ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   
   <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -24,7 +24,7 @@
 <body class="min-h-screen bg-[#090e17] text-white">
   <div id="root"></div>
 
-  <!-- تأكد من استدعاء كل ملف مرة واحدة فقط بهذا الترتيب الصارم -->
+  <!-- الترتيب الصارم للاستدعاء دون أي تكرار -->
   <script src="js/config.js"></script>
   <script src="js/calculations.js"></script>
   <script src="js/api.js"></script>
