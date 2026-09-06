@@ -1,5 +1,5 @@
 /**
- * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي
+ * تطبيق بوابة جلب العالمية - كود الواجهة المتكامل والنهائي v25.0
  */
 const { useState, useEffect, useMemo } = React;
 
@@ -164,7 +164,6 @@ function App() {
     return list;
   }, [processedReps, selectedDepartment, searchTerm]);
 
-  // شاشة تسجيل الدخول
   if (!currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -185,7 +184,7 @@ function App() {
                 required
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
-                placeholder="admin / gm / 14"
+                placeholder="admin / 14"
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500 font-mono"
               />
             </div>
@@ -216,7 +215,6 @@ function App() {
 
   return (
     <div className="pb-16">
-      {/* الشريط العلوي */}
       <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 shadow-md p-3">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -305,7 +303,6 @@ function App() {
         )}
       </header>
 
-      {/* التنبيهات */}
       {notification && (
         <div className="fixed bottom-5 left-5 z-50 bg-[#48a042] text-white px-4 py-2.5 rounded-2xl shadow-2xl font-bold text-xs animate-bounce">
           {notification}
@@ -341,6 +338,38 @@ function App() {
             <div className="jalap-card border border-emerald-500/40 bg-emerald-950/20 p-3.5 rounded-2xl col-span-2 md:col-span-1">
               <span className="text-emerald-300 text-xs font-bold mb-1 font-sans">إجمالي العمولات المستحقة</span>
               <span className="text-lg font-black text-emerald-400">{formatNum(companyTotals.grandComm)} ر.س</span>
+            </div>
+          </div>
+        )}
+
+        {/* شريط التحقق والمطابقة المالية الرقابي المدمج */}
+        {currentUser.role !== 'rep' && (
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs shadow-md">
+            <div className="flex items-center gap-2 font-sans">
+              <i className="fa-solid fa-scale-balanced text-[#48a042] text-base"></i>
+              <div>
+                <span className="font-bold text-white block">المطابقة والتحقق الرقابي للمبيعات:</span>
+                <span className="text-[11px] text-slate-400">مقارنة صافي مبيعات الفواتير العامة مع مجموع مبيعات المجموعات</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                <span className="text-slate-400 text-[10px] block font-sans">داخل المجموعات الـ 14:</span>
+                <b className="text-emerald-400 text-sm">{formatNum(companyTotals.repGroupsSalesTotal)} ر.س</b>
+              </div>
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                <span className="text-slate-400 text-[10px] block font-sans">أصناف خارج المجموعات:</span>
+                <b className={`text-sm ${companyTotals.unmappedSalesTotal > 0 ? 'text-amber-400' : 'text-slate-400'}`}>
+                  {formatNum(companyTotals.unmappedSalesTotal)} ر.س
+                </b>
+              </div>
+              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                <span className="text-slate-400 text-[10px] block font-sans">نسبة التغطية والمطابقة:</span>
+                <b className={`text-sm ${companyTotals.coveragePct >= 95 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {companyTotals.coveragePct.toFixed(1)}%
+                </b>
+              </div>
             </div>
           </div>
         )}
@@ -485,7 +514,6 @@ function App() {
               )}
             </div>
 
-            {/* بطاقات الشروط العامة الثلاث */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
                 <label className="text-slate-400 block mb-1.5 font-bold">نسبة شرط الهدف العام (%)</label>
@@ -519,7 +547,6 @@ function App() {
               </div>
             </div>
 
-            {/* جدول المجموعات الكامل مع خيارات الإلزامية والتفعيل */}
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-bold text-slate-300 flex items-center gap-2">
                 <i className="fa-solid fa-boxes-stacked text-[#48a042]"></i> شروط وعمولات المجموعات الـ 14:
@@ -672,34 +699,3 @@ function App() {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
-{/* شريط المطابقة والتحقق المالي الرقابي */}
-        {currentUser.role !== 'rep' && (
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs">
-            <div className="flex items-center gap-2 font-sans">
-              <i className="fa-solid fa-scale-balanced text-[#48a042] text-base"></i>
-              <div>
-                <span className="font-bold text-white block">المطابقة والتحقق الرقابي للمبيعات:</span>
-                <span className="text-[11px] text-slate-400">مقارنة صافي مبيعات الفواتير العامة مع مجموع مبيعات المجموعات</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-                <span className="text-slate-400 text-[10px] block font-sans">داخل المجموعات الـ 14:</span>
-                <b className="text-emerald-400 text-sm">{formatNum(companyTotals.repGroupsSalesTotal)} ر.س</b>
-              </div>
-              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-                <span className="text-slate-400 text-[10px] block font-sans">أصناف خارج المجموعات (غير مضمنة):</span>
-                <b className={`text-sm ${companyTotals.unmappedSalesTotal > 0 ? 'text-amber-400' : 'text-slate-400'}`}>
-                  {formatNum(companyTotals.unmappedSalesTotal)} ر.س
-                </b>
-              </div>
-              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-                <span className="text-slate-400 text-[10px] block font-sans">نسبة التغطية والمطابقة:</span>
-                <b className={`text-sm ${companyTotals.coveragePct >= 95 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {companyTotals.coveragePct.toFixed(1)}%
-                </b>
-              </div>
-            </div>
-          </div>
-        )}
