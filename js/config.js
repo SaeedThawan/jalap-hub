@@ -1,12 +1,11 @@
 /**
- * إعدادات منظومة جلب العالمية - Config v43.0
+ * إعدادات منظومة جلب العالمية
  */
 const CONFIG = {
   COMPANY_NAME: 'شركة جلب العالمية للتجارة',
   LOGO_PATH: 'assets/logo.png',
   
-  // تأكد أن الرابط ينتهي بـ /exec
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyc2pX-q3M9pLp8iWbU1Hw6w1vT_o9I5gB2tq_V1X4/exec',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw1DTvmz2e-eoKP-FxRD0I-742FwPFi6Fk3ag201fw4QWC3Sodq63R4O07fGY92T7Yi/exec',
 
   DEFAULT_GENERAL_RULES: {
     generalThresholdPct: 80,
