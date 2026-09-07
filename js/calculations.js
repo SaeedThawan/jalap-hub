@@ -1,5 +1,6 @@
 /**
- * منظومة جلب العالمية - محرك احتساب الأداء والعمولات والتحقق المالي v36.0
+ * منظومة جلب العالمية - محرك احتساب الأداء والعمولات والتحقق المالي v37.0 المعتمد
+ * ربط عمولة الهدف العام بشرط تحقيق عدد المجموعات والمجموعات الإلزامية
  */
 const CalcEngine = {
   processRepData(rep, generalRules, groupRules) {
@@ -90,13 +91,16 @@ const CalcEngine = {
     const passGate_MandatoryGroups = failedMandatoryGroups.length === 0;
 
     const meetsGenTargetReq = !isGenTargetMandatory || passGate_GenTarget;
-    const isEligibleForGroupCommissions = isRepActive && meetsGenTargetReq && passGate_MandatoryGroups && passGate_MinGroupsCount;
     
+    // شروط الاستحقاق الكاملة لعمولة المجموعات
+    const isEligibleForGroupCommissions = isRepActive && meetsGenTargetReq && passGate_MandatoryGroups && passGate_MinGroupsCount;
     const totalGroupCommissionEarned = isEligibleForGroupCommissions ? rawGroupCommSum : 0;
-    const isEligibleForGenTargetComm = isRepActive && passGate_GenTarget;
-    const generalTargetCommEarned = isEligibleForGenTargetComm ? (Number(gRules.generalTargetCommValue) || 0) : 0;
-    const grandTotalCommission = totalGroupCommissionEarned + generalTargetCommEarned;
 
+    // عمولة الهدف العام: مشروطة بتحقيق المجموعات المطلوبة والمجموعات الإلزامية أيضاً
+    const isEligibleForGenTargetComm = isRepActive && passGate_GenTarget && passGate_MandatoryGroups && passGate_MinGroupsCount;
+    const generalTargetCommEarned = isEligibleForGenTargetComm ? (Number(gRules.generalTargetCommValue) || 0) : 0;
+
+    const grandTotalCommission = totalGroupCommissionEarned + generalTargetCommEarned;
     const unmappedSales = Math.max(0, genSales - repGroupsSalesTotal);
 
     let blockers = [];
